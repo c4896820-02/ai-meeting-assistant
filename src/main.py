@@ -73,9 +73,6 @@ def repair_json(raw_text: str) -> dict:
     )
 
     repaired_content = response.choices[0].message.content
-    print("\n===== 修复后的模型输出 =====")
-    print(repaired_content)
-
     cleaned = extract_json_text(repaired_content)
     return json.loads(cleaned)
 
@@ -99,30 +96,12 @@ def call_llm(prompt: str) -> dict:
     )
 
     content = response.choices[0].message.content
-
-    print("\n===== 模型原始输出 =====")
-    print(content)
-
     cleaned = extract_json_text(content)
-
-    print("\n===== 清洗后 JSON 文本 =====")
-    print(cleaned)
 
     try:
         return json.loads(cleaned)
-    except Exception as e:
-        print("\n❌ 首次 JSON 解析失败：", e)
-        print("开始尝试自动修复 JSON ...")
-
-        try:
-            return repair_json(content)
-        except Exception as repair_error:
-            print("\n❌ JSON 修复仍然失败：", repair_error)
-            return {
-                "error": "JSON解析失败且修复失败",
-                "raw_output": content,
-                "cleaned_output": cleaned
-            }
+    except Exception:
+        return repair_json(content)
 
 
 # ===== 保存结果 =====
@@ -132,16 +111,18 @@ def save_result(result: dict, output_path: Path) -> None:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
 
-# ===== 主流程 =====
+# ===== 核心流程：给界面和命令行共用 =====
+def run_pipeline(meeting_content: str) -> dict:
+    prompt_template = read_text_file(PROMPT_PATH)
+    final_prompt = build_prompt(prompt_template, meeting_content)
+    return call_llm(final_prompt)
+
+
+# ===== 命令行主流程 =====
 def main() -> None:
     meeting_content = read_text_file(DATA_PATH)
-    prompt_template = read_text_file(PROMPT_PATH)
-
-    final_prompt = build_prompt(prompt_template, meeting_content)
-
-    result = call_llm(final_prompt)
+    result = run_pipeline(meeting_content)
     save_result(result, OUTPUT_PATH)
-
     print("\n✅ 结果已保存到：", OUTPUT_PATH)
 
 

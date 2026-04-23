@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "input": "今天产品和技术讨论了AI会议助手开发方案。最终决定先做简化版，下周评审。张三负责prompt优化，李四负责接口开发。",
+    "expected_topic": "AI会议助手开发方案讨论",
+    "expected_action_count": 2
+  },
+  {
+    "id": 2,
+    "input": "会议主要讨论了报销系统优化。当前没有形成明确决策，但提出需要下周继续评审，王五负责整理问题清单。",
+    "expected_topic": "报销系统优化讨论",
+    "expected_action_count": 1
+  }
+]
